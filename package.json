@@ -1,6 +1,6 @@
 {
   "name": "convco-action",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Performs convco checks, generates changelogs, and determines versions.",
   "main": "index.js",
   "scripts": {
