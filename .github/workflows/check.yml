@@ -1,0 +1,12 @@
+name: Convco check
+on: [ pull_request ]
+jobs:
+    check:
+        name: convco check
+        runs-on: ubuntu-latest
+        steps:
+            - name: Convco
+              uses: convco/convco-action@v0.1.0
+              with:
+                command: check
+                
