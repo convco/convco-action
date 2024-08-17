@@ -17,5 +17,5 @@ outputs:
   result:
     description: The output of the convco command
 runs:
-  using: 'node16'
-  main: 'index.js'
+  using: 'node20'
+  main: 'dist/index.js'
