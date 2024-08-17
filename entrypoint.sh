@@ -16,20 +16,17 @@ case "$os" in
     wget "$base_url/convco-macos.zip" -O convco.zip
     unzip convco.zip
     rm convco.zip
-    mv convco ./
     chmod +x ./convco
     ;;
   windows)
     wget "$base_url/convco-windows.zip" -O convco.zip
     unzip convco.zip
     rm convco.zip
-    mv convco.exe ./convco.exe
     ;;
   *)
     wget "$base_url/convco-ubuntu.zip" -O convco.zip
     unzip convco.zip
     rm convco.zip
-    mv convco ./convco
     chmod +x ./convco
     ;;
 esac
