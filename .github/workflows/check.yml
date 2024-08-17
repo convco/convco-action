@@ -5,8 +5,9 @@ jobs:
         name: convco check
         runs-on: ubuntu-latest
         steps:
+            - name: Checkout
+              uses: actions/checkout@v4
             - name: Convco
-              uses: convco/convco-action@v0.1.0
+              uses: ./ # convco/convco-action@v0.1.0
               with:
                 command: check
-                
