@@ -1,5 +1,8 @@
 name: Convco
 description: Performs convco checks, generates changelogs, and determines versions.
+branding:
+  icon: git-commit
+  color: orange
 inputs:
   command:
     description: The convco command to run (check, changelog, version)
