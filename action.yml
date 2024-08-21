@@ -1,21 +1,52 @@
-name: Convco
-description: Performs convco checks, generates changelogs, and determines versions.
+name: Convco install
+description: Installs convco to checks, generates changelogs, and determines versions.
 branding:
   icon: git-commit
   color: orange
 inputs:
-  command:
-    description: The convco command to run (check, changelog, version)
-    required: true
-  options:
-    description: Additional options for the convco command
-    default: ''
   convco_version:
     description: 'The convco version to download (default: latest)'
     default: latest
-outputs:
-  result:
-    description: The output of the convco command
 runs:
-  using: 'node20'
-  main: 'dist/index.js'
+  using: composite
+  steps:
+    - id: install
+      shell: bash
+      env:
+        convco_version: ${{inputs.convco_version}}
+      run: |
+        if ! command -v convco &>/dev/null; then
+          set -e
+
+          os=$(echo "$RUNNER_OS" | tr '[:upper:]' '[:lower:]')
+
+          if [ $convco_version = "latest" ]; then
+              base_url="https://github.com/convco/convco/releases/latest/download"
+          else
+              base_url="https://github.com/convco/convco/releases/download/$convco_version"
+          fi
+          mkdir -p .convco/bin
+          echo "$(realpath .convco/bin)" >> GITHUB_PATH
+          cd .convco/bin
+          case "$os" in
+            macos)
+              wget "$base_url/convco-macos.zip" -O convco.zip
+              unzip convco.zip
+              rm convco.zip
+              chmod +x ./convco
+              ;;
+            windows)
+              wget "$base_url/convco-windows.zip" -O convco.zip
+              unzip convco.zip
+              rm convco.zip
+              ;;
+            *)
+              wget "$base_url/convco-ubuntu.zip" -O convco.zip
+              unzip convco.zip
+              rm convco.zip
+              chmod +x ./convco
+              ;;
+          esac
+          ./convco --version
+          cd -
+        fi

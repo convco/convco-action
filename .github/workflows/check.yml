@@ -9,5 +9,5 @@ jobs:
               uses: actions/checkout@v4
             - name: Convco
               uses: ./ # convco/convco-action@v0.1.0
-              with:
-                command: check
+            - name: Convco check
+              run: convco check

@@ -1,18 +1,12 @@
 # Convco action
 
-Performs convco checks, generates changelogs, and determines versions.
+Installs convco to performs convco check, generates changelogs, and determines versions.
 
 ## Inputs
 
-### `command`
+### `convco_version`
 
-**Required** The convco command to run (check, changelog, version).
-
-## Outputs
-
-### `options`
-
-Additional options for the convco command
+The convco version to download (default: latest)
 
 ## Example usage
 
