@@ -1,5 +1,5 @@
 name: Convco install
-description: Installs convco to checks, generates changelogs, and determines versions.
+description: Installs convco to check commits, generate changelogs, and determine versions.
 branding:
   icon: git-commit
   color: orange
@@ -16,37 +16,79 @@ runs:
         convco_version: ${{inputs.convco_version}}
       run: |
         if ! command -v convco &>/dev/null; then
-          set -e
+          set -euo pipefail
 
-          os=$(echo "$RUNNER_OS" | tr '[:upper:]' '[:lower:]')
-
-          if [ $convco_version = "latest" ]; then
-              base_url="https://github.com/convco/convco/releases/latest/download"
+          version="${convco_version}"
+          if [ "${version}" = "latest" ]; then
+            base_url="https://github.com/convco/convco/releases/latest/download"
           else
-              base_url="https://github.com/convco/convco/releases/download/$convco_version"
+            if [[ "${version}" =~ ^[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z][0-9A-Za-z.-]*)?$ ]]; then
+              version="v${version}"
+            fi
+            base_url="https://github.com/convco/convco/releases/download/${version}"
           fi
+
           mkdir -p .convco/bin
           echo "$(realpath .convco/bin)" >> $GITHUB_PATH
           cd .convco/bin
-          case "$os" in
-            macos)
-              wget "$base_url/convco-macos.zip" -O convco.zip
-              unzip convco.zip
-              rm convco.zip
-              chmod +x ./convco
+
+          case "${RUNNER_OS}" in
+            Linux)
+              case "${RUNNER_ARCH}" in
+                X64) target="x86_64-unknown-linux-musl" ;;
+                ARM64) target="aarch64-unknown-linux-musl" ;;
+                *)
+                  echo "Unsupported Linux runner architecture: ${RUNNER_ARCH}" >&2
+                  exit 1
+                  ;;
+              esac
+              binary="convco"
               ;;
-            windows)
-              wget "$base_url/convco-windows.zip" -O convco.zip
-              unzip convco.zip
-              rm convco.zip
+            macOS)
+              case "${RUNNER_ARCH}" in
+                X64) target="x86_64-apple-darwin" ;;
+                ARM64) target="aarch64-apple-darwin" ;;
+                *)
+                  echo "Unsupported macOS runner architecture: ${RUNNER_ARCH}" >&2
+                  exit 1
+                  ;;
+              esac
+              binary="convco"
+              ;;
+            Windows)
+              case "${RUNNER_ARCH}" in
+                X64) target="x86_64-pc-windows-msvc" ;;
+                *)
+                  echo "Unsupported Windows runner architecture: ${RUNNER_ARCH}" >&2
+                  exit 1
+                  ;;
+              esac
+              binary="convco.exe"
               ;;
             *)
-              wget "$base_url/convco-ubuntu.zip" -O convco.zip
-              unzip convco.zip
-              rm convco.zip
-              chmod +x ./convco
+              echo "Unsupported runner OS: ${RUNNER_OS}" >&2
+              exit 1
               ;;
           esac
-          ./convco --version
+
+          if [ -z "${target}" ]; then
+            echo "Could not determine release target for ${RUNNER_OS}/${RUNNER_ARCH}" >&2
+            exit 1
+          fi
+
+          archive="convco-${target}.tar.gz"
+          url="${base_url}/${archive}"
+          echo "Downloading ${url}"
+          if ! curl -sSfL "${url}" -o "${archive}"; then
+            echo "Failed to download ${url}" >&2
+            exit 1
+          fi
+          if ! tar -xzf "${archive}" --strip-components=1 "convco-${target}/${binary}"; then
+            echo "Failed to extract ${binary} from ${archive}" >&2
+            exit 1
+          fi
+          rm "${archive}"
+          chmod +x "./${binary}"
+          "./${binary}" --version
           cd -
         fi
